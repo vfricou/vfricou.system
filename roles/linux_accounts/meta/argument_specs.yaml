@@ -1,0 +1,163 @@
+---
+argument_specs:
+  main:
+    author:
+      - 'Vincent FRICOU'
+    short_description: "Manage accounts on GNU/Linux systems"
+    description:
+      - "Manage Linux accounts"
+      - "Autogenerate password if not provided"
+      - "Deploy SSH public keys to users"
+    options:
+      linux_accounts_no_log:
+        type: bool
+        description: 'No log directive'
+        required: false
+        default: true
+      linux_accounts_list:
+        type: list
+        required: true
+        description: "Users specifications list"
+        elements: dict
+        options:
+          name:
+            type: str
+            required: true
+            description: "User name"
+          comment:
+            type: str
+            required: false
+            description: "User description (GECOS)"
+          home:
+            type: str
+            required: false
+            description: "User home path"
+            default: '/home/<name>'
+          shell:
+            type: str
+            required: false
+            description: "User login shell"
+            default: '/usr/bin/bash'
+            choices:
+              - "/usr/bin/bash"
+              - "/bin/bash"
+              - "/usr/bin/zsh"
+              - "/bin/zsh"
+              - "/usr/bin/false"
+              - "/bin/false"
+              - "/usr/sbin/nologin"
+              - "/sbin/nologin"
+          state:
+            type: str
+            required: false
+            description: "User state"
+            default: 'present'
+            choices:
+              - "present"
+              - "absent"
+          system:
+            type: bool
+            required: false
+            description: 'Define system account'
+            default: false
+          pass:
+            type: str
+            required: false
+            description:
+              - "User password"
+              - "B(Must) defined for types C(plain) and C(encrypted)"
+          pass_type:
+            type: str
+            required: false
+            description: "User password type"
+            choices:
+              - "plain"
+              - "encrypted"
+              - "autogen"
+              - "passphrase"
+              - "locked"
+          passphrase_params:
+            type: list
+            required: false
+            description:
+              - 'Passphrase format settings'
+              - 'B(Order is mandatory)'
+              - 'B(Order)'
+              - 'C(min_length): Minimum word length'
+              - 'C(max_length): Maximum word length'
+              - 'C(numwords): Word count for passphrase'
+              - 'C(delimiter): Delimiters'
+              - 'C(case): Case format'
+              - 'Refer to L(community.general.random_string,https://docs.ansible.com/ansible/latest/collections/community/general/random_words_lookup.html#ansible-collections-community-general-random-words-lookup)'
+            default:
+              - 5
+              - 8
+              - 6
+              - '-'
+              - 'capitalize'
+          force_passwd_change:
+            type: bool
+            required: false
+            description: "Force user password update"
+          groups:
+            type: list
+            required: false
+            description: "Additionnal user groups"
+          ssh_keys:
+            type: list
+            required: false
+            description: "User SSH public keys to deploy"
+            elements: dict
+            options:
+              content:
+                type: str
+                required: true
+                description: "SSH public key"
+              opts:
+                type: str
+                required: false
+                description: "SSH public key options"
+              state:
+                type: str
+                required: true
+                description: "SSH public key status"
+                choices:
+                  - "present"
+                  - "absent"
+
+    examples: |
+      # Create user with autogen password
+      linux_accounts_list:
+        - name: ansible
+          comment: 'Ansible remote user'
+          state: 'present'
+          pass_type: 'autogen'
+
+      # Create user with autogen password, add it to group and public ssh authorized keys
+      linux_accounts_list:
+        - name: ansible
+          comment: 'Ansible remote user'
+          state: 'present'
+          pass_type: 'autogen'
+          groups:
+            - <group1>
+            - <group2>
+          ssh_keys:
+            - content: '<public_ssh_key_content>'
+              state: 'present'
+
+      # Create system user with password lock and add ssh authorized keys
+      linux_accounts_list:
+        - name: ansible
+          comment: 'Ansible remote user'
+          state: 'present'
+          system: true
+          pass_type: 'locked'
+          ssh_keys:
+            - content: '<public_ssh_key_content>'
+              state: 'present'
+
+      # Remove user account (automaticaly delete home directory)
+      linux_accounts_list:
+        - name: ansible
+          state: 'absent'

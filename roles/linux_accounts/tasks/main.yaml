@@ -1,0 +1,12 @@
+---
+- name: 'INCLUDE => User management tasks'
+  loop: "{{ linux_accounts_list }}"
+  loop_control:
+    loop_var: __user
+  tags:
+    - linux_users
+  ansible.builtin.include_tasks:
+    file: processing.yaml
+    apply:
+      tags:
+        - linux_users

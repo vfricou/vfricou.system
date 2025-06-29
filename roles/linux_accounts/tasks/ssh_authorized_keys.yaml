@@ -1,0 +1,10 @@
+---
+- name: "processing | authorized_keys | Deploy ssh authorized_keys for user {{ __user['name'] }}"
+  become: true
+  tags:
+    - linux_accounts
+  ansible.posix.authorized_key:
+    user: "{{ __user['name'] }}"
+    state: "{{ __key.state }}"
+    key: "{{ __key.content }}"
+    key_options: "{{ __key.opts | default(omit) }}"

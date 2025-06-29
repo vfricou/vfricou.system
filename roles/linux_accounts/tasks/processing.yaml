@@ -1,0 +1,153 @@
+---
+- name: 'processing | Define account state'
+  block:
+    - name: "processing | Set account state with provided value for {{ __user['name'] }}"
+      ansible.builtin.set_fact:
+        __account_state: "{{ __user['state'] }}"
+  rescue:
+    - name: "processing | Set default account state to present for {{ __user['name'] }}"
+      ansible.builtin.set_fact:
+        __account_state: 'present'
+
+- name: "processing | Ensure presence of groups defined for {{ __user['name'] }}"
+  become: true
+  loop: "{{ __user['groups'] | flatten(levels=1) }}"
+  loop_control:
+    loop_var: __grp
+  when:
+    - __grp is defined
+    - __account_state == 'present'
+  tags:
+    - linux_accounts
+  ansible.builtin.group:
+    name: "{{ __grp }}"
+    state: present
+
+- name: "processing | Retrieve account informations for {{ __user['name'] }}"
+  become: true
+  when:
+    - __account_state == 'absent'
+  register: __user_getent
+  ignore_errors: true
+  tags:
+    - linux_accounts
+  ansible.builtin.getent:
+    database: 'passwd'
+    key: "{{ __user['name'] }}"
+
+- name: "processing | Generate password for {{ _user['name'] }}"
+  no_log: "{{ linux_accounts_no_log }}"
+  when:
+    - __account_state == 'present'
+    - (
+        __user['pass'] is not defined and
+        (__user['pass_type'] == 'autogen' or __user['pass_type'] == 'passphrase')
+      )
+    - (
+        (__user['force_passwd_change'] is defined and __user['force_passwd_change']) or
+        ansible_facts.getent_passwd is not defined
+      )
+  tags:
+    - linux_accounts
+  block:
+    - name: "processing | Generate password for {{ __user['name'] }}"
+      when:
+        - __user['pass_type'] == 'autogen'
+      ansible.builtin.set_fact:
+        __gen_pass: "{{ lookup('ansible.builtin.password', '/dev/null length=64 chars=ascii_letters,digits,-,_,.') }}"
+
+    - name: "processing | Generate passphrase for {{ __user['name'] }}"
+      when:
+        - __user['pass_type'] == 'passphrase'
+      ansible.builtin.set_fact:
+        __gen_pass: "{{ lookup(
+          'community.general.random_words',
+          min_length=__user['passphrase_params'][0] | default(5, true) | int,
+          max_length=__user['passphrase_params'][1] | default(8, true) | int,
+          numwords=__user['passphrase_params'][2] | default(6, true) | int,
+          delimiter=__user['passphrase_params'][3] | default('-', true) | string,
+          case=__user['passphrase_params'][4] | default('capitalize', true) | string)
+        }}"
+
+- name: "processing | Set password fact for {{ __user['name'] }}"
+  no_log: "{{ linux_accounts_no_log }}"
+  when:
+    - __user.keys() is ansible.builtin.contains('pass_type')
+    - __user['pass_type'] != 'encrypted'
+    - __user['pass_type'] != 'locked'
+    - __account_state == 'present'
+  tags:
+    - linux_accounts
+  ansible.builtin.set_fact:
+    _passwd: "{{ __gen_pass | default(__user['pass']) | password_hash('sha512') }}"
+
+- name: "processing | Manage user {{ __user['name'] }}" # noqa: jinja[spacing]
+  become: true
+  tags:
+    - linux_accounts
+  vars:
+    __pass_type: "{{ (__user['pass_type'] == 'locked') | ansible.builtin.ternary(true, false) }}"
+  ansible.builtin.user:
+    name: "{{ __user['name'] }}"
+    comment: "{{ __user['comment'] | default(omit) }}"
+    home: "{{ __user['home'] | default(omit) }}"
+    shell: "{{ __user['shell'] | default('/usr/bin/bash', true) }}"
+    state: "{{ __account_state | string }}"
+    system: "{{ __user['system'] | default(false, true) }}"
+    password_lock: "{{ (__pass_type is defined) | ansible.builtin.ternary(__pass_type, omit) }}"
+    password: "{{ _passwd | default(omit) }}"
+    update_password: "{{ (__user['force_passwd_change'] | default(false, true)) | ansible.builtin.ternary('always', 'on_create') }}"
+
+- name: "processing | Update account database informations for {{ __user['name'] }}"
+  become: true
+  when:
+    - __account_state == 'present'
+  register: __user_getent
+  tags:
+    - linux_accounts
+  ansible.builtin.getent:
+    database: 'passwd'
+    key: "{{ __user['name'] }}"
+
+- name: "processing | Manage home directory for {{ __user['name'] }}" # noqa: jinja[spacing]
+  become: true
+  tags:
+    - linux_accounts
+  vars:
+    __home_path: >-
+      {%- if __user['home'] is defined -%}
+      {{ __user['home'] }}
+      {%- elif ansible_facts.getent_passwd is defined and ansible_facts.getent_passwd[__user['name']] -%}
+      {{ ansible_facts.getent_passwd[__user['name']][4] }}
+      {%- endif -%}
+  ansible.builtin.file:
+    path: "{{ __home_path }}"
+    owner: "{{ __user['name'] | default(omit) }}"
+    group: "{{ __user['name'] | default(omit) }}"
+    mode: o-rwx
+    state: "{{ (__account_state == 'present') | ansible.builtin.ternary('directory', 'absent') }}"
+    recurse: "{{ (__account_state == 'present') | ansible.builtin.ternary(true, false) }}"
+
+- name: "processing | Add to defined groups user {{ __user['name'] }}"
+  become: true
+  when:
+    - __user['groups'] is defined
+    - __account_state == 'present'
+  tags:
+    - linux_accounts
+  ansible.builtin.user:
+    name: "{{ __user['name'] }}"
+    groups: "{{ __user['groups'] | flatten(levels=1) }}"
+
+- name: 'processing | INCLUDE => ssh authorized keys deployment'
+  loop: "{{ __user['ssh_keys'] }}"
+  loop_control:
+    loop_var: __key
+  when:
+    - __user['ssh_keys'] is defined
+    - __account_state == 'present'
+  ansible.builtin.include_tasks:
+    file: ssh_authorized_keys.yaml
+    apply:
+      tags:
+        - linux_accounts
