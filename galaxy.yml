@@ -1,0 +1,25 @@
+---
+namespace: "vfricou"
+name: "system"
+
+version: "1.0.0"
+
+readme: "README.md"
+authors:
+  - "Vincent FRICOU"
+description: "Various system management roles and modules"
+
+license:
+  - "AGPL-3.0-only"
+license_file: 'LICENSE'
+
+repository: "https://github.com/vfricou/vfricou.system/"
+documentation: "https://vfricou.github.io/collection-documentation/"
+homepage: "https://github.com/vfricou/vfricou.system/"
+issues: "https://github.com/vfricou/vfricou.system/issues"
+build_ignore: []
+
+tags: []
+
+dependencies: {}
+#  community.crypto: '>=2.26.1'
