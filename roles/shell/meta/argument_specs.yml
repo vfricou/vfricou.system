@@ -1,0 +1,183 @@
+argument_specs:
+  main:
+    author:
+      - 'Vincent FRICOU'
+    short_description: "Shell configuration"
+    description:
+      - 'Configure GNU/Linux shells'
+    options:
+      # Global configuration variables
+      shell_to_configure:
+        type: str
+        description: 'Define shell to configure'
+        required: false
+        default: 'bash'
+        choices:
+          - 'bash'
+          - 'zsh'
+      shell_config_users:
+        type: list
+        elements: str
+        description:
+          - 'Define user list where to update shell rc installed'
+        required: false
+        default:
+          - 'root'
+
+      # Bash configuration variables
+      shell_bash_prompt_colors_enabled:
+        type: bool
+        description: 'Enable colored bash prompt'
+        required: false
+        default: true
+      shell_bash_prompt_host_color:
+        type: str
+        description: 'Define host prompt part color'
+        required: false
+        default: 'light_blue'
+        choices:
+          - 'dark_gray'
+          - 'black'
+          - 'light_red'
+          - 'red'
+          - 'light_green'
+          - 'green'
+          - 'yellow'
+          - 'brown'
+          - 'light_blue'
+          - 'blue'
+          - 'light_purple'
+          - 'purple'
+          - 'light_cyan'
+          - 'cyan'
+          - 'white'
+          - 'light_gray'
+
+      # ZSH configuration variables
+      shell_zsh_install:
+        type: bool
+        description: 'Install ZSH shell'
+        required: false
+        default: false
+      shell_zsh_omz_install:
+        type: bool
+        description: 'Install Oh-My-Zsh'
+        required: false
+        default: true
+      shell_zsh_omz_theme:
+        type: str
+        description: 'Oh-My-Zsh theme'
+        required: false
+        default: 'agnoster'
+        choices:
+          - robbyrussell
+          - agnoster
+      shell_zsh_omz_repo:
+        type: str
+        description: 'Oh-My-Zsh repository'
+        required: false
+        default: 'https://github.com/ohmyzsh/ohmyzsh.git'
+      shell_zsh_omz_update:
+        type: str
+        description:
+          - 'Activate Oh-My-Zsh auto-update'
+          - 'C(disabled) : Manually update Oh-My-Zsh'
+          - 'C(auto) : Automatically update Oh-My-Zsh'
+          - 'C(reminder) : Just remind to update Oh-My-Zsh'
+        required: false
+        default: 'reminder'
+        choices:
+          - disabled
+          - auto
+          - reminder
+      shell_zsh_omz_update_frequency:
+        type: int
+        description: 'Oh-My-Zsh update frequency in days'
+        required: false
+        default: 13
+      shell_zsh_omz_plugins:
+        type: list
+        elements: str
+        description:
+          - 'Oh-My-Zsh plugins to activate'
+          - 'Limited choices of plugins for this role'
+          - 'Refer to U(https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins) for plugins details'
+        required: false
+        default:
+          - git
+          - colored-man-pages
+          - zsh-interactive-cd
+        choices:
+          - asdf
+          - colored-man-pages
+          - direnv
+          - eza
+          - git
+          - history
+          - k9s
+          - mercurial
+          - zsh-interactive-cd
+
+      # ASDF configuration variables
+      shell_asdf_install:
+        type: bool
+        description: 'Activate ASDF tool installation'
+        required: false
+        default: false
+      shell_asdf_force_update:
+        type: bool
+        description: 'Force ASDF update to specified version'
+        required: false
+        default: false
+      shell_asdf_version:
+        type: str
+        description: 'Define ASDF version to install'
+        required: false
+        default: 'v0.18.0'
+      shell_asdf_dl_url:
+        type: str
+        description: 'ASDF base URL to download package'
+        required: false
+        default: 'https://github.com/asdf-vm/asdf/releases/download/{{ shell_asdf_version }}'
+      shell_asdf_pkg_name:
+        type: str
+        description: 'ASDF package name'
+        required: false
+        default: 'asdf-{{ shell_asdf_version }}-linux-amd64.tar.gz'
+      shell_asdf_access_group:
+        type: str
+        description: 'ASDF system group to allow binary usage'
+        required: false
+        default: 'asdfusers'
+
+      # Direnv configuration variables
+      shell_direnv_install:
+        type: bool
+        description: 'Activate Direnv tool installation'
+        required: false
+        default: false
+      shell_direnv_force_update:
+        type: bool
+        description: 'Force Direnv update to specified version'
+        required: false
+        default: false
+      shell_direnv_version:
+        type: str
+        description: 'Direnv version to install'
+        required: false
+        default: 'v2.36.0'
+      shell_direnv_dl_url:
+        type: str
+        description: 'Base URL to download Direnv package'
+        required: false
+        default: "https://github.com/direnv/direnv/releases/download/{{ shell_direnv_version }}"
+      shell_direnv_pkg_name:
+        type: str
+        description: 'Direnv package name'
+        required: false
+        default: 'direnv.linux-amd64'
+      shell_direnv_access_group:
+        type: str
+        description: 'Direnv system group to allow binary usage'
+        required: false
+        default: 'direnvusers'

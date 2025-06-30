@@ -2,7 +2,6 @@
 galaxy_info:
   role_name: "linux_accounts"
   author: "Vincent FRICOU"
-  namespace: "system"
   description: "Manage accounts on GNU/Linux systems"
   issue_tracker_url: "https://github.com/vfricou/vfricou.system/issues"
   license: "AGPL-3.0-only"

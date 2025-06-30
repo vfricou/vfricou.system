@@ -1,0 +1,30 @@
+{{ ansible_managed | comment }}
+
+export ZSH="$HOME/.oh-my-zsh"
+ZSH_THEME="agnoster"
+# Uncomment the following line to use case-sensitive completion.
+CASE_SENSITIVE="true"
+# Use hyphen-insensitive completion.
+HYPHEN_INSENSITIVE="true"
+ENABLE_CORRECTION="true"
+COMPLETION_WAITING_DOTS="true"
+
+# OMZ update mode
+zstyle ':omz:update' mode {{ shell_zsh_omz_update }}
+{% if shell_zsh_omz_update == 'auto' or shell_zsh_omz_update == 'reminder' %}
+zstyle ':omz:update' frequency {{ shell_zsh_omz_update_frequency }}
+{% endif %}
+
+plugins=({{ shell_zsh_omz_plugins | join(' ') }})
+
+{% if shell_asdf_install %}
+# Source ASDF tool
+source "/usr/local/asdf/asdf.completion.zsh"
+{% endif %}
+
+{% if shell_direnv_install %}
+# Load Direnv
+eval "$(direnv hook zsh)"
+{% endif %}
+
+source $ZSH/oh-my-zsh.sh

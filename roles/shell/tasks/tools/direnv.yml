@@ -1,0 +1,46 @@
+---
+- name: 'tools | direnv | Get current ASDF version'
+  become: true
+  register: __direnv_current_version
+  ignore_errors: true
+  changed_when: false
+  tags:
+    - shell
+    - shell_direnv
+    - shell_tools
+  ansible.builtin.command:
+    cmd: "{{ shell_direnv_bin_path }} version"
+
+- name: 'tools | direnv | Ensure access group exist'
+  become: true
+  tags:
+    - shell
+    - shell_direnv
+    - shell_tools
+  ansible.builtin.group:
+    name: "{{ shell_direnv_access_group }}"
+    state: present
+    system: true
+
+- name: 'tools | direnv | Download direnv binary'
+  become: true
+  tags:
+    - shell
+    - shell_direnv
+    - shell_tools
+  when:
+    - (
+        shell_direnv_force_update or
+        __direnv_current_version.failed or
+        (__direnv_current_version.stdout is defined and shell_direnv_version not in __direnv_current_version.stdout)
+      )
+  ansible.builtin.get_url:
+    url: "{{ shell_direnv_dl_url }}/{{ shell_direnv_pkg_name }}"
+    dest: "{{ shell_direnv_bin_path }}"
+    owner: 'root'
+    group: "{{ shell_direnv_access_group }}"
+    mode: '0750'
+    seuser: 'system_u'
+    serole: 'object_r'
+    setype: 'bin_t'
+    selevel: 's0'

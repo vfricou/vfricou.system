@@ -1,0 +1,137 @@
+---
+- name: 'tools | asdf | Get current ASDF version'
+  become: true
+  register: __asdf_current_version
+  ignore_errors: true
+  changed_when: false
+  tags:
+    - shell
+    - shell_asdf
+    - shell_tools
+  ansible.builtin.command:
+    cmd: "{{ shell_asdf_bin_path }} version"
+
+- name: 'tools | asdf | Ensure access group exist'
+  become: true
+  tags:
+    - shell
+    - shell_asdf
+    - shell_tools
+  ansible.builtin.group:
+    name: "{{ shell_asdf_access_group }}"
+    state: present
+    system: true
+
+- name: 'tools | asdf | Download'
+  when:
+    - (
+        shell_asdf_force_update or
+        __asdf_current_version.failed or
+        (__asdf_current_version.stdout is defined and shell_asdf_version not in __asdf_current_version.stdout)
+      )
+  tags:
+    - shell
+    - shell_asdf
+    - shell_tools
+  block:
+    - name: 'tools | asdf | Generate temporary download folder'
+      become: true
+      register: __dl_tmp_folder
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: 'asdf_'
+
+    - name: 'tools | asdf | Unarchive binary'
+      become: true
+      ansible.builtin.unarchive:
+        dest: "{{ __dl_tmp_folder.path }}"
+        src: "{{ shell_asdf_dl_url }}/{{ shell_asdf_pkg_name }}"
+        remote_src: true
+        owner: 'root'
+        group: 'root'
+
+    - name: 'tools | asdf | Copy binary'
+      become: true
+      ansible.builtin.copy:
+        remote_src: true
+        dest: "{{ shell_asdf_bin_path }}"
+        src: "{{ __dl_tmp_folder.path }}/asdf"
+        owner: 'root'
+        group: "{{ shell_asdf_access_group }}"
+        mode: "0550"
+        seuser: 'system_u'
+        serole: 'object_r'
+        setype: 'bin_t'
+        selevel: 's0'
+
+- name: "tools | asdf | Ensure correct rights for ASDF binary"
+  become: true
+  tags:
+    - shell
+    - shell_asdf
+    - shell_tools
+  ansible.builtin.file:
+    path: "{{ shell_asdf_bin_path }}"
+    owner: 'root'
+    group: "{{ shell_asdf_access_group }}"
+    mode: "0550"
+    seuser: 'system_u'
+    serole: 'object_r'
+    setype: 'bin_t'
+    selevel: 's0'
+
+- name: "tools | asdf | Add defined users to asdf group"
+  become: true
+  loop: "{{ shell_config_users }}"
+  tags:
+    - shell
+    - shell_asdf
+    - shell_tools
+  ansible.builtin.user:
+    name: "{{ item }}"
+    groups: "{{ shell_asdf_access_group }}"
+    append: true
+
+- name: "tools | asdf | Prepare folder for ASDF completions"
+  become: true
+  tags:
+    - shell
+    - shell_asdf
+    - shell_tools
+  ansible.builtin.file:
+    path: '/usr/local/share/asdf/'
+    state: directory
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: "tools | asdf | Generate ASDF bash completions"
+  become: true
+  tags:
+    - shell
+    - shell_asdf
+    - shell_tools
+  loop:
+    - bash
+    - zsh
+  register: __asdf_completions
+  ansible.builtin.command:
+    cmd: "{{ shell_asdf_bin_path }} completion {{ item }}"
+
+- name: 'tools | asdf | Deploy completions'
+  become: true
+  tags:
+    - shell
+    - shell_asdf
+    - shell_tools
+  loop:
+    - file: '/usr/local/share/asdf/asdf.completion.bash'
+      content: "{{ __asdf_completions.results[0].stdout }}"
+    - file: '/usr/local/share/asdf/asdf.completion.zsh'
+      content: "{{ __asdf_completions.results[1].stdout }}"
+  ansible.builtin.copy:
+    dest: "{{ item.file }}"
+    content: "{{ item.content }}"
+    owner: 'root'
+    group: 'root'
+    mode: '0644'

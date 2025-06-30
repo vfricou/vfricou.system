@@ -1,0 +1,22 @@
+---
+- name: 'shells | zsh | Ensure zsh is installed'
+  become: true
+  tags:
+    - shell
+    - shell_zsh
+  ansible.builtin.package:
+    state: present
+    name: 'zsh'
+
+- name: 'shells | zsh | INCLUDE => USER SHELL Oh-My-Zsh installation'
+  loop: "{{ shell_config_users }}"
+  loop_control:
+    loop_var: __user
+  tags:
+    - shell
+    - shell_zsh
+  ansible.builtin.include_tasks:
+    file: tools/omz.yml
+    apply:
+      tags:
+        - shell

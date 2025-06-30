@@ -1,0 +1,11 @@
+{{ ansible_managed | comment }}
+
+{% if shell_asdf_install %}
+# Source ASDF tool
+source "/usr/local/share/asdf/asdf.completion.bash"
+{% endif %}
+
+{% if shell_direnv_install %}
+# Load Direnv
+eval "$(direnv hook bash)"
+{% endif %}

@@ -1,0 +1,28 @@
+---
+- name: "tools | omz | Get necessary informations for {{ __user }}"
+  become: true
+  register: __user_informations
+  tags:
+    - shell
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ __user }}"
+
+- name: "tools | omz | Clone Oh-My-Zsh"
+  become: true
+  ansible.builtin.git:
+    dest: "{{ __user_informations['ansible_facts']['getent_passwd'][__user][4] }}/.oh-my-zsh"
+    repo: "{{ shell_zsh_omz_repo }}"
+    depth: 1
+    update: false
+    clone: true
+    version: 'master'
+
+- name: "tools | omz | Update Oh-My-Zsh folder rights"
+  become: true
+  ansible.builtin.file:
+    path: "{{ __user_informations['ansible_facts']['getent_passwd'][__user][4] }}/.oh-my-zsh"
+    owner: "{{ __user_informations['ansible_facts']['getent_passwd'][__user][1] }}"
+    group: "{{ __user_informations['ansible_facts']['getent_passwd'][__user][2] }}"
+    mode: 'o-rwx'
+    recurse: true

@@ -1,0 +1,64 @@
+---
+- name: 'INCLUDE => Bash tasks'
+  tags:
+    - shell
+    - shell_bash
+  ansible.builtin.include_tasks:
+    file: shells/bash.yml
+    apply:
+      tags:
+        - shell_bash
+
+- name: 'Ensure git is installed'
+  become: true
+  tags:
+    - shell
+    - shell_asdf
+    - shell_tools
+  ansible.builtin.package:
+    state: present
+    name: git
+
+- name: 'INCLUDE => ASDF tasks'
+  tags:
+    - shell
+    - shell_asdf
+    - shell_tools
+  when:
+    - shell_asdf_install
+  ansible.builtin.import_tasks:
+    file: tools/asdf.yml
+
+- name: 'INCLUDE => DIRENV tasks'
+  tags:
+    - shell
+    - shell_direnv
+    - shell_tools
+  when:
+    - shell_direnv_install
+  ansible.builtin.import_tasks:
+    file: tools/direnv.yml
+
+- name: 'INCLUDE => ZSH tasks'
+  tags:
+    - shell
+    - shell_zsh
+  when:
+    - shell_zsh_install
+  ansible.builtin.import_tasks:
+    file: shells/zsh.yml
+
+- name: 'INCLUDE => USER SHELL configuration tasks'
+  tags:
+    - shell
+    - shell_asdf
+    - shell_direnv
+    - shell_tools
+  loop: "{{ shell_config_users }}"
+  loop_control:
+    loop_var: __user
+  ansible.builtin.include_tasks:
+    file: tools/users_shell_config.yml
+    apply:
+      tags:
+        - shell

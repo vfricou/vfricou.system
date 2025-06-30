@@ -1,0 +1,33 @@
+---
+- name: "tools | users_shell_config | Get necessary informations for {{ __user }}"
+  become: true
+  register: __user_informations
+  tags:
+    - shell
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ __user }}"
+
+- name: "tools | users_shell_config | Configure Bash shell for user {{ __user }}"
+  become: true
+  tags:
+    - shell
+  ansible.builtin.template:
+    dest: "{{ __user_informations['ansible_facts']['getent_passwd'][__user][4] }}/.bashrc"
+    src: home/bashrc.j2
+    mode: "0600"
+    owner: "{{ __user }}"
+    group: "{{ __user_informations['ansible_facts']['getent_passwd'][__user][2] }}"
+
+- name: "tools | users_shell_config | Configure Zsh shell for user {{ __user }}"
+  become: true
+  tags:
+    - shell
+  when:
+    - shell_zsh_install
+  ansible.builtin.template:
+    dest: "{{ __user_informations['ansible_facts']['getent_passwd'][__user][4] }}/.zshrc"
+    src: home/zshrc.j2
+    mode: "0600"
+    owner: "{{ __user }}"
+    group: "{{ __user_informations['ansible_facts']['getent_passwd'][__user][2] }}"

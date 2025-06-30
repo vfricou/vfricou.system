@@ -1,0 +1,25 @@
+---
+- name: 'shells | bash | Ensure bash shell is installed'
+  become: true
+  tags:
+    - shell_bash
+  ansible.builtin.package:
+    state: present
+    name:
+      - 'bash'
+      - 'bash-completion'
+
+- name: 'shells | bash | Configure prompt color'
+  become: true
+  when:
+    - shell_bash_prompt_colors_enabled
+  ansible.builtin.template:
+    dest: '/etc/profile.d/99-bash_prompt.sh'
+    src: etc/bash_prompt.sh.j2
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+    seuser: 'system_u'
+    serole: 'object_r'
+    setype: 'bin_t'
+    selevel: 's0'

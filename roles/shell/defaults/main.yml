@@ -1,0 +1,37 @@
+---
+shell_to_configure: 'bash'
+shell_config_users:
+  - 'root'
+
+# Bash configurations variables
+shell_bash_prompt_colors_enabled: true
+shell_bash_prompt_host_color: 'light_blue'
+
+# ZSH
+shell_zsh_install: false
+shell_zsh_omz_install: true
+shell_zsh_omz_theme: 'agnoster'
+shell_zsh_omz_update: 'reminder'
+shell_zsh_omz_repo: 'https://github.com/ohmyzsh/ohmyzsh.git'
+shell_zsh_omz_update_frequency: 13
+shell_zsh_omz_plugins:
+  - git
+  - colored-man-pages
+  - zsh-interactive-cd
+
+# ASDF configurations variables
+shell_asdf_install: false
+shell_asdf_force_update: false
+shell_asdf_version: 'v0.18.0'
+shell_asdf_dl_url: "https://github.com/asdf-vm/asdf/releases/download/{{ shell_asdf_version }}"
+shell_asdf_pkg_name: "asdf-{{ shell_asdf_version }}-linux-amd64.tar.gz"
+shell_asdf_access_group: 'asdfusers'
+
+
+# Direnv
+shell_direnv_install: false
+shell_direnv_force_update: false
+shell_direnv_version: 'v2.36.0'
+shell_direnv_dl_url: "https://github.com/direnv/direnv/releases/download/{{ shell_direnv_version }}"
+shell_direnv_pkg_name: 'direnv.linux-amd64'
+shell_direnv_access_group: 'direnvusers'
