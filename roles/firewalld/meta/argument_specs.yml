@@ -1,0 +1,133 @@
+---
+argument_specs:
+  main:
+    author:
+      - 'Vincent FRICOU'
+    short_description: 'Install and manage firewalld'
+    description:
+      - 'Install and manage firewalld'
+
+    options:
+      firewalld_services:
+        type: list
+        description: 'List of services to declare to firewalld to be used in rules'
+        required: false
+        elements: dict
+        options:
+          name:
+            type: str
+            description: 'Service name'
+            required: true
+          description:
+            type: str
+            description: 'Service description'
+            required: true
+          ports:
+            type: list
+            description: 'Service ports and protocol (as firewalld format. Ex : 161/udp)'
+            required: true
+            options:
+              port:
+                type: int
+                description: 'Service port number'
+                required: true
+              protocol:
+                type: str
+                description: 'Service protocol'
+                required: true
+
+      firewalld_rules:
+        type: list
+        description: 'List of rules to add to firewalld'
+        required: false
+        elements: dict
+        options:
+          action:
+            type: str
+            description: 'Action to perform for rule'
+            required: true
+            choices:
+              - 'allow'
+              - 'deny'
+          state:
+            type: str
+            description: 'State of rule'
+            required: false
+            default: 'enabled'
+            choices:
+              - 'disabled'
+              - 'enabled'
+          type:
+            type: str
+            description: 'Type of rule'
+            required: true
+            choices:
+              - 'service'
+              - 'port'
+              - 'source'
+              - 'rich_rule'
+          zone:
+            type: str
+            description:
+              - 'The firewalld zone to add/remove to/from.'
+              - 'Note that the default zone can be configured per system but V(public) is default from upstream.'
+              - 'Available choices can be extended based on per-system configs, listed here are "out of the box" defaults.'
+              - 'Possible values include V(block), V(dmz), V(drop), V(external), V(home), V(internal), V(public), V(trusted), V(work).'
+            required: false
+            default: 'public'
+          content:
+            type: list
+            description: 'Content of rule'
+            required: true
+
+    examples: |
+      - name: 'Cleanup default services on all default zones. Enable SSH on default zone (public)'
+        hosts:
+          - all
+        vars:
+          firewalld_rules:
+            - action: allow
+              state: disabled
+              type: service
+              zone:
+                - block
+                - dmz
+                - drop
+                - external
+                - home
+                - internal
+                - public
+                - trusted
+                - work
+              content:
+                - cockpit
+                - dhcpv6-client
+                - mdns
+                - samba-client
+            - action: allow
+              state: enabled
+              type: service
+              content:
+                - ssh
+        roles:
+          - role: vfricou.system.firewalld
+
+      - name: 'Create firewalld service for Hashicorp Vault and enable it'
+        hosts:
+          - all
+        vars:
+          firewalld_services:
+            - name: hashivault
+              description: 'Hashicorp Vault communication port'
+              ports:
+                - port: 8200
+                  protocol: tcp
+          firewalld_rules:
+            - action: allow
+              state: enabled
+              type: service
+              zone: work
+              content:
+                - hashivault
+        roles:
+          - role: vfricou.system.firewalld

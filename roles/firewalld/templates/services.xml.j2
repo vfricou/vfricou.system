@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>{{ service.name }}</short>
+  <description>{{ service.description }}</description>
+{% for port_data in service.ports %}
+  <port port="{{ port_data['port'] }}" protocol="{{ port_data['protocol'] | default('tcp', true) }}"/>
+{% endfor %}
+</service>

@@ -1,0 +1,60 @@
+---
+- name: 'rules | Apply firewall ports rules'
+  become: true
+  notify: 'Reload firewalld'
+  when:
+    - __rule.type == 'port'
+  with_nested:
+    - "{{ __rule.zone | default(['public']) }}"
+    - "{{ __rule.content }}"
+  ansible.posix.firewalld:
+    zone: "{{ item[0] }}"
+    state: "{{ __rule.state | default('enabled') }}"
+    immediate: false
+    permanent: true
+    port: "{{ item[1] }}"
+
+- name: 'rules | Apply firewall sources rules'
+  become: true
+  notify: 'Reload firewalld'
+  when:
+    - __rule.type == 'source'
+  with_nested:
+    - "{{ __rule.zone | default(['public']) }}"
+    - "{{ __rule.content }}"
+  ansible.posix.firewalld:
+    zone: "{{ item[0] }}"
+    state: "{{ __rule.state | default('enabled') }}"
+    immediate: false
+    permanent: true
+    source: "{{ item[1] }}"
+
+- name: 'rules | Apply firewall services rules'
+  become: true
+  notify: 'Reload firewalld'
+  when:
+    - __rule.type == 'service'
+  with_nested:
+    - "{{ __rule.zone | default(['public']) }}"
+    - "{{ __rule.content }}"
+  ansible.posix.firewalld:
+    zone: "{{ item[0] }}"
+    state: "{{ __rule.state | default('enabled') }}"
+    immediate: false
+    permanent: true
+    service: "{{ item[1] }}"
+
+- name: 'rules | Apply firewall rich rules'
+  become: true
+  notify: 'Reload firewalld'
+  when:
+    - __rule.type == 'rich_rule'
+  with_nested:
+    - "{{ __rule.zone | default(['public']) }}"
+    - "{{ __rule.content }}"
+  ansible.posix.firewalld:
+    zone: "{{ item[0] }}"
+    state: "{{ __rule.state | default('enabled') }}"
+    immediate: false
+    permanent: true
+    rich_rule: "{{ item[1] }}"

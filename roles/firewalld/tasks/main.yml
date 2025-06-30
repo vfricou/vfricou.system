@@ -1,0 +1,78 @@
+---
+- name: 'Ensure required packages are installed'
+  become: true
+  tags:
+    - firewalld
+  notify: 'Reload firewalld'
+  ansible.builtin.package:
+    state: present
+    name: 'firewalld'
+
+- name: 'Deploy specific services configuration'
+  become: true
+  when:
+    - firewalld_services is defined
+  tags:
+    - firewalld
+    - firewalld_services
+  loop: "{{ firewalld_services }}"
+  loop_control:
+    loop_var: service
+  register: __firewalld_services_deployment
+  notify: 'Reload firewalld'
+  ansible.builtin.template:
+    src: services.xml.j2
+    dest: '/etc/firewalld/services/{{ service.name }}.xml'
+    owner: 'root'
+    group: 'root'
+    mode: '0600'
+    seuser: system_u
+    serole: object_r
+    setype: lib_t
+    selevel: s0
+
+- name: 'Flush handlers to reload Firewalld configurations'
+  tags:
+    - firewalld_rules
+    - firewalld_services
+  ansible.builtin.meta: flush_handlers
+
+- name: 'Ensure required zones exists'
+  become: true
+  loop: "{{ firewalld_rules | community.general.json_query('[].zone') | flatten | ansible.builtin.unique }}"
+  tags:
+    - firewalld
+    - firewalld_rules
+  notify: 'Reload firewalld'
+  ansible.posix.firewalld:
+    zone: "{{ item }}"
+    state: present
+    immediate: false
+    permanent: true
+
+- name: 'Flush handlers to reload Firewalld configurations'
+  tags:
+    - firewalld_rules
+    - firewalld_services
+  ansible.builtin.meta: flush_handlers
+
+- name: 'Deploy firewalld rules'
+  when: firewalld_rules is defined
+  tags:
+    - firewalld
+    - firewalld_rules
+  loop: "{{ firewalld_rules }}"
+  loop_control:
+    loop_var: __rule
+  ansible.builtin.include_tasks:
+    file: rules.yml
+    apply:
+      tags:
+        - firewalld_rules
+
+- name: 'Reload configuration to load new services'
+  tags:
+    - firewalld
+    - firewalld_rules
+    - firewalld_services
+  ansible.builtin.meta: flush_handlers
