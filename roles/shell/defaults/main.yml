@@ -35,3 +35,6 @@ shell_direnv_version: 'v2.36.0'
 shell_direnv_dl_url: "https://github.com/direnv/direnv/releases/download/{{ shell_direnv_version }}"
 shell_direnv_pkg_name: 'direnv.linux-amd64'
 shell_direnv_access_group: 'direnvusers'
+
+# Umask
+shell_umask: '077'

@@ -1,0 +1,21 @@
+---
+- name: 'umask | Ensure system umask in /etc/profile.d/umask.sh' # noqa: risky-file-permissions
+  become: true
+  tags:
+    - shell
+    - shell_umask
+  ansible.builtin.lineinfile:
+    create: true
+    path: /etc/profile.d/umask.sh
+    regexp: '^([^#]*\b)umask\s+\d+$'
+    line: 'umask {{ shell_umask }}'
+
+- name: 'umask | Ensure system umask in login.defs' # noqa: risky-file-permissions
+  become: true
+  tags:
+    - shell
+    - shell_umask
+  ansible.builtin.replace:
+    path: /etc/login.defs
+    regexp: ^(\s*)UMASK(\s+).*
+    replace: \g<1>UMASK\g<2>{{ shell_umask }}

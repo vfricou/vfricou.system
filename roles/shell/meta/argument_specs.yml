@@ -181,3 +181,9 @@ argument_specs:
         description: 'Direnv system group to allow binary usage'
         required: false
         default: 'direnvusers'
+
+      shell_umask:
+        type: str
+        description: 'Default UMask configuration'
+        required: false
+        default: '077'
