@@ -88,7 +88,7 @@ argument_specs:
               - 'C(numwords): Word count for passphrase'
               - 'C(delimiter): Delimiters'
               - 'C(case): Case format'
-              - 'Refer to L(community.general.random_string,https://docs.ansible.com/ansible/latest/collections/community/general/random_words_lookup.html#ansible-collections-community-general-random-words-lookup)'
+              - 'Refer to L(community.general.random_string,https://docs.ansible.com/ansible/latest/collections/community/general/random_words_lookup.html#ansible-collections-community-general-random-words-lookup)' # noqa: yaml[line-length]
             default:
               - 5
               - 8

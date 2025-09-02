@@ -105,7 +105,7 @@
     group: 'root'
     mode: '0755'
 
-- name: "tools | asdf | Generate ASDF bash completions"
+- name: "tools | asdf | Generate ASDF bash completions" # noqa: no-changed-when
   become: true
   tags:
     - shell

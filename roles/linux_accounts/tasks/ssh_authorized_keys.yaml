@@ -1,5 +1,5 @@
 ---
-- name: "processing | authorized_keys | Deploy ssh authorized_keys for user {{ __user['name'] }}"
+- name: "ssh_authorized_keys | Deploy ssh authorized_keys for user {{ __user['name'] }}"
   become: true
   tags:
     - linux_accounts

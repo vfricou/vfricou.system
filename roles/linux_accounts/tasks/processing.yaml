@@ -23,7 +23,7 @@
     name: "{{ __grp }}"
     state: present
 
-- name: "processing | Retrieve account informations for {{ __user['name'] }}"
+- name: "processing | Retrieve account informations for {{ __user['name'] }}" # noqa: var-naming[no-role-prefix]
   become: true
   when:
     - __account_state == 'absent'
@@ -56,7 +56,7 @@
       ansible.builtin.set_fact:
         __gen_pass: "{{ lookup('ansible.builtin.password', '/dev/null length=64 chars=ascii_letters,digits,-,_,.') }}"
 
-    - name: "processing | Generate passphrase for {{ __user['name'] }}"
+    - name: "processing | Generate passphrase for {{ __user['name'] }}" # noqa: jinja[spacing]
       when:
         - __user['pass_type'] == 'passphrase'
       ansible.builtin.set_fact:
@@ -69,7 +69,7 @@
           case=__user['passphrase_params'][4] | default('capitalize', true) | string)
         }}"
 
-- name: "processing | Set password fact for {{ __user['name'] }}"
+- name: "processing | Set password fact for {{ __user['name'] }}" # noqa: var-naming[no-role-prefix]
   no_log: "{{ linux_accounts_no_log }}"
   when:
     - __user.keys() is ansible.builtin.contains('pass_type')
@@ -98,7 +98,7 @@
     password: "{{ _passwd | default(omit) }}"
     update_password: "{{ (__user['force_passwd_change'] | default(false, true)) | ansible.builtin.ternary('always', 'on_create') }}"
 
-- name: "processing | Update account database informations for {{ __user['name'] }}"
+- name: "processing | Update account database informations for {{ __user['name'] }}" # noqa: var-naming[no-role-prefix]
   become: true
   when:
     - __account_state == 'present'
