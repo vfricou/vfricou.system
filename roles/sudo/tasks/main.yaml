@@ -1,6 +1,9 @@
 ---
 - name: 'Deploy sudoers configurations'
   become: true
+  tags:
+    - sudo
+    - sudo_extends
   when:
     - sudo_extends is defined
   loop: "{{ sudo_extends }}"
@@ -17,6 +20,8 @@
 
 - name: 'Configure global sudo configurations'
   become: true
+  tags:
+    - sudo
   ansible.builtin.template:
     src: sudoers.j2
     dest: '/etc/sudoers'
