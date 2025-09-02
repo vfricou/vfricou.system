@@ -1,0 +1,33 @@
+argument_specs:
+  main:
+    author:
+      - 'Vincent FRICOU'
+    short_description: "Sudo configuration"
+    description:
+      - 'Configure sudo'
+      - 'Configure sudoers'
+    options:
+      sudo_logfile:
+        type: str
+        description: 'Sudo action log file path'
+        required: false
+        default: 'var/log/sudo.log'
+      sudo_umask:
+        type: str
+        description: 'Sudo UMask override'
+        required: false
+        default: '0027'
+      sudo_extends:
+        type: list
+        elements: dict
+        description: 'Sudo extended configurations'
+        required: false
+        options:
+          filename:
+            type: str
+            description: 'Configuration filename in C(/etc/sudoers.d)'
+            required: true
+          content:
+            type: str
+            description: 'Sudo configuration extends'
+            required: true

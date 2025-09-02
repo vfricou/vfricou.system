@@ -1,0 +1,29 @@
+---
+- name: 'Deploy sudoers configurations'
+  become: true
+  when:
+    - sudo_extends is defined
+  loop: "{{ sudo_extends }}"
+  ansible.builtin.copy:
+    dest: '/etc/sudoers.d/{{ item.filename }}'
+    content: "{{ item.content }}"
+    owner: 'root'
+    group: 'root'
+    mode: '0640'
+    seuser: 'system_u'
+    serole: 'object_r'
+    setype: 'etc_t'
+    selevel: 's0'
+
+- name: 'Configure global sudo configurations'
+  become: true
+  ansible.builtin.template:
+    src: sudoers.j2
+    dest: '/etc/sudoers'
+    owner: 'root'
+    group: 'root'
+    mode: '0640'
+    seuser: 'system_u'
+    serole: 'object_r'
+    setype: 'etc_t'
+    selevel: 's0'
