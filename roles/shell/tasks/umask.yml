@@ -9,13 +9,46 @@
     path: /etc/profile.d/umask.sh
     regexp: '^([^#]*\b)umask\s+\d+$'
     line: 'umask {{ shell_umask }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+    seuser: 'system_u'
+    serole: 'object_r'
+    setype: 'bin_t'
+    selevel: 's0'
 
-- name: 'umask | Ensure system umask in login.defs' # noqa: risky-file-permissions
-  become: true
-  tags:
-    - shell
-    - shell_umask
-  ansible.builtin.replace:
-    path: /etc/login.defs
-    regexp: ^(\s*)UMASK(\s+).*
-    replace: \g<1>UMASK\g<2>{{ shell_umask }}
+- name: 'umask | Manage umask according presence in file'
+  block:
+    - name: 'umask | Check if UMASK directive exist in /etc/login.defs'
+      become: true
+      tags:
+        - shell
+        - shell_umask
+      ansible.builtin.lineinfile:
+        dest: /etc/login_defs
+        line: "UMASK"
+      check_mode: yes
+      register: __umask_presence
+      failed_when: __umask_presence.changed
+
+    - name: 'umask | Directive exist, update'
+      become: true
+      tags:
+        - shell
+        - shell_umask
+      block:
+        - name: 'umask | Ensure system umask in login.defs' # noqa: risky-file-permissions
+          ansible.builtin.replace:
+            path: /etc/login.defs
+            regexp: ^(\s*)UMASK(\s+).*
+            replace: \g<1>UMASK\g<2>{{ shell_umask }}
+  rescue:
+    - name: 'umask | Directive not exist, create'
+      become: true
+      tags:
+        - shell
+        - shell_umask
+      ansible.builtin.blockinfile:
+        path: '/etc/login.defs'
+        marker: "# {mark} ANSIBLE MANAGED BLOCK"
+        block: UMASK {{ shell_umask }}
