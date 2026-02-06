@@ -1,0 +1,21 @@
+galaxy_info:
+  author: "Vincent FRICOU"
+  role_name: "proxmox"
+  description:
+    - 'Proxmox management role with features :'
+    - '- Configure users'
+    - '- Configure permissions'
+    - '- Configure realms'
+    - '- Manage LXC guests'
+    - '- Manage KVM guests'
+  issue_tracker_url: "https://github.com/vfricou/vfricou.system/issues"
+  license: "AGPL-3.0-only"
+  min_ansible_version: '2.18'
+  platforms: []
+
+  galaxy_tags:
+    - proxmox
+    - kvm
+    - lxc
+
+dependencies: []

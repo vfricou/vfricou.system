@@ -1,0 +1,38 @@
+argument_specs:
+  main:
+    author:
+      - 'Vincent FRICOU'
+    short_description: "Proxmox configuration and guest deployment role"
+    description:
+      - 'Configure users'
+      - 'Configure permissions'
+      - 'Configure realms'
+      - 'Manage LXC guests'
+      - 'Manage KVM guests'
+    options:
+      proxmox_api_host:
+        type: str
+        description: 'Proxmox node FQDN or IP'
+        required: true
+      proxmox_api_port:
+        type: int
+        description: 'Proxmox API port'
+        required: false
+        default: 8006
+      proxmox_api_user:
+        type: str
+        description: 'Proxmox API username'
+        required: true
+      proxmox_api_password:
+        type: str
+        description: 'Proxmox API password'
+        required: false
+      proxmox_api_token_id:
+        type: str
+        description: 'Proxmox API token ID'
+        required: false
+      proxmox_api_token_secret:
+        type: str
+        description: 'Proxmox API token Secret'
+        required: false
+
